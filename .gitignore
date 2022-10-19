@@ -1,4 +1,14 @@
 # files
 *_ign.*
+*.dat
+*.plt
+*.blk
+*.arf
+*.txt
+*.prn
+*.tim
+*.tof
+__pycache__
+vertex
 # paths
 *_ign/

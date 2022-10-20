@@ -229,12 +229,18 @@ class Assembler:
         header = ""
         for i, tab in enumerate(self.tabfiles):
             if i == 0:
-                min_T, step_T, nsteps_T = np.loadtxt(tab, skiprows=4, max_rows=3)
-                min_P, step_P, nsteps_P = np.loadtxt(tab, skiprows=8, max_rows=3)
-                header = np.loadtxt(tab, max_rows=12, dtype=str, delimiter="\n")
+                min_T, step_T, nsteps_T = np.loadtxt(tab, skiprows=4, 
+                                                     max_rows=3)
+                min_P, step_P, nsteps_P = np.loadtxt(tab, skiprows=8, 
+                                                     max_rows=3)
+                header = np.loadtxt(tab, max_rows=12, dtype=str, 
+                                    delimiter="\n")
+                col_names = np.loadtxt(tab, skiprows=12, max_rows=1, dtype=str, 
+                                    delimiter="\n")
                 self.P_info =  min_P, step_P, nsteps_P
                 self.T_info =  min_T, step_T, nsteps_T
-                self.header = header                
+                self.col_names = col_names
+                self.header = np.hstack([header, col_names])          
             part = np.loadtxt(tab, skiprows=13)
             parts.append(part)
             
@@ -306,12 +312,17 @@ class Assembler:
             r = np.reshape(c, (nrows, ncols))
             r_del = np.delete(np.delete(r, del_rows, 0), del_cols, 1)
             stitched_cols.append(r_del.flatten())
-        self.header[11] = "%i"%(ny-1)
-        self.header[7] = "%i"%(nx-1)
+        
+        # has new resolution now
+        self.header[6] = self.header[6].replace("%i"%(nx), "%i"%(nx-1))
+        self.header[10] = self.header[10].replace("%i"%(ny), "%i"%(ny-1))
+        
         return np.column_stack(stitched_cols)
             
     def export_tab(self):
-        name = self.path + self.path[:-1] + "_1.tab"
+        title = self.path[:-1] + "_1.tab"
+        name = self.path + title
+        self.header[1] =  title
         header = '\n'.join(self.header)
         # TODO 1: correct numerical format (check original tab files)
         # IF num >= 1E6 save w scientific notation 0.123456 E+7

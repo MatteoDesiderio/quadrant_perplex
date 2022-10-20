@@ -10,6 +10,8 @@ classes
 
 import subprocess
 import os
+import glob
+import numpy as np
 
 check = lambda i : i[-2:] != "\n"
 
@@ -103,21 +105,21 @@ class Quadrant:
                     inputs.append(sub_el)
         
         self.inputs = inputs
-        self.stdout = "Not done yet"
-        self.stderr = "Not done yet"
+        self.bld_stdout = "Build Not done yet"
+        self.bld_stderr = "Build Not done yet"
         
-        self.vtx_stdout = ""
-        self.vtx_stderr = ""
+        self.vtx_stdout = "Vertex Not done yet"
+        self.vtx_stderr = "Vertex Not done yet"
     
     def setUpPath(self):
         os.mkdir("./" + self.name)
     
     def build(self):
-        build = Automator( "build", self.inputs)
+        build = Automator("build", self.inputs)
         stdout, stderr = build.automate()
         self.bld_stdout = stdout
         self.bld_stderr = stderr
-        return (stdout, stderr)
+        return (self.bld_stdout, self.bld_stderr)
         
 
     def create(self):
@@ -131,7 +133,23 @@ class Quadrant:
         stdout, stderr = vertex.automate()
         self.vtx_stdout = stdout
         self.vtx_stderr = stderr
-        return (stdout, stderr)
+        return (self.vtx_stdout, self.vtx_stderr)
+    
+    def werami(self):
+        """
+        For now it's hardcoded to do one thing (rho, K and G for
+        the whole system, in the default PT range and with the
+        last grid_level resolution used, i.e. the highest'
+        """
+        
+        inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "0"]
+        inputs = [self.name] + inputs
+        inputs = [i + "\n" for i in inputs if check(i)]
+        werami = Automator( "werami", inputs)
+        stdout, stderr = werami.automate()
+        self.wtx_stdout = stdout
+        self.wtx_stderr = stderr
+        return (self.wtx_stdout, self.wtx_stderr)
     
 class Automator:
     """
@@ -189,4 +207,131 @@ class Automator:
         process.stdin.close()
 
         return stdout, stderr
+
+class Assembler:
+    def __init__(self, path, subdivisions):
+        """
+        
+        """
+        path = path if path[-1] == "/" else path + "/"
+        self.path = path
+        self.subdivisions = subdivisions
+        self.ntot = subdivisions**2
+        self.tabfiles = [path + path[:-1] + "_quadrant%i"%i + "_1.tab"
+                         for i in range(self.ntot)]
+        self.P_info = []
+        self.T_info = []
+        self.header = []
+        self.stitched = None
+        
+    def assemble(self):
+        parts = []
+        header = ""
+        for i, tab in enumerate(self.tabfiles):
+            if i == 0:
+                min_T, step_T, nsteps_T = np.loadtxt(tab, skiprows=4, max_rows=3)
+                min_P, step_P, nsteps_P = np.loadtxt(tab, skiprows=8, max_rows=3)
+                header = np.loadtxt(tab, max_rows=12, dtype=str, delimiter="\n")
+                self.P_info =  min_P, step_P, nsteps_P
+                self.T_info =  min_T, step_T, nsteps_T
+                self.header = header                
+            part = np.loadtxt(tab, skiprows=13)
+            parts.append(part)
+            
+        joined = self.join(parts)
+        stitched = self.stitch(joined)
+        self.stitched = stitched
+        return parts, joined, stitched
+    
+    def join(self, parts):
+        col_list = ([], [], [], [], [], [])
+        for part in parts:
+            # extract the columns of the tab file
+            c1, c2, c3, c4, c5, c6 = part.T
+            cols = [c1, c2, c3, c4, c5, c6]
+            for ic, c in enumerate(cols):
+                col_list[ic].append(c)
+        
+        nrows = int(self.P_info[-1])
+        ncols = int(self.T_info[-1])
+        ind_ar = np.reshape(range(self.ntot), (self.subdivisions, 
+                                               self.subdivisions))
+        
+        joined_col_list = []
+        for cols in col_list:
+            vert_chain = []
+            for indices in ind_ar:
+                hor_chain = []
+                for i in indices:
+                    rr = np.reshape(cols[i], (nrows, ncols))
+                    hor_chain.append(rr)
+                vert_chain.append(np.hstack(hor_chain))
+            joined_col_list.append(np.vstack(vert_chain).flatten())
+        
+        return np.column_stack(joined_col_list)
+        
+    
+    def stitch(self, joined):
+        # extract the columns of the tab file
+        c1, c2, c3, c4, c5, c6 = joined.T
+        cols = [c1, c2, c3, c4, c5, c6]
+        # define resolution along y, x (P, T space) (nrows, ncols respectively)
+        ny = int(self.P_info[-1])
+        nx = int(self.T_info[-1])
+        # if all is joined without deleting duplicates, the effective res is:
+        nrows = ny * self.subdivisions
+        ncols = nx * self.subdivisions
+        # if PT space is split in quadrants, this helps locate their borders
+        multipliers = np.r_[range(1, self.subdivisions - 1, 1)]
+        # handle the case when only 4 quadrants were created 
+        if len(multipliers) == 0:
+            multipliers = 1
+        # the actual indices of the columns, rows to be deleted 
+        del_rows = int(nx) * multipliers 
+        del_cols = int(ny) * multipliers 
+        
+        stitched_cols = []
+        # in this example, I have 4 grids (3x3) joined. x are the repeated 
+        # elements that must be eliminated. 
+        #    . . x x . .
+        #    . . x x . .
+        #    x x x x x x
+        #    x x x x x x
+        #    . . x x . .
+        #    . . x x . .
+        # The code below generates for each variable a matrix like this from 
+        # the column of tab file. the th xs are deleted and then again every
+        # everyhting is reshaped properly as a tab file
+        for c in cols:
+            r = np.reshape(c, (nrows, ncols))
+            r_del = np.delete(np.delete(r, del_rows, 0), del_cols, 1)
+            stitched_cols.append(r_del.flatten())
+        self.header[11] = "%i"%(ny-1)
+        self.header[7] = "%i"%(nx-1)
+        return np.column_stack(stitched_cols)
+            
+    def export_tab(self):
+        name = self.path + self.path[:-1] + "_1.tab"
+        header = '\n'.join(self.header)
+        # TODO 1: correct numerical format (check original tab files)
+        # IF num >= 1E6 save w scientific notation 0.123456 E+7
+        # ELSE %1.2f
+        np.savetxt(name, self.stitched, header=header, comments="")
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         

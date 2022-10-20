@@ -6,10 +6,9 @@ Created on Wed Oct 19 17:34:44 2022
 @author: matteo
 """
 
-import numpy as np
-from quadralizer import  Quadrant
+from utils import create_squares, create_symlinks
+from quadralizer import Quadrant, Assembler
 import os
-import shutil
 
 project_names = ["primRef", "HzXu08", "BsXu08"][:1]
 components = [["MGO", "FEO", "SIO2", ""], # the last empty one is to end 
@@ -22,41 +21,16 @@ models = [["C2/c", "Wus", "Pv", "O", "Wad", "Ring", "Opx", "Aki", "Ppv", ""],
           (),
           ()]
 
+
 Trange = [300, 4000]
 Prange = [1, 1400000]
-
-
 subdivisions = 2
-
-_n = subdivisions + 1
-
-T, P = np.linspace(*Trange, _n), np.linspace(*Prange, _n)
-T_pairs = []
-P_pairs = []
-for i_t, _ in enumerate(T):
-    try:
-        T_pairs.append([T[i_t], T[i_t + 1]])
-    except IndexError:
-        pass
-    
-for i_p, _ in enumerate(P):
-    try:
-        P_pairs.append([P[i_p], P[i_p + 1]])
-    except IndexError:
-        pass
-
-squares = []
-for _tpair in T_pairs:
-    tpair = "%.1f"%_tpair[0], "%.1f"%_tpair[1] 
-    for _ppair in P_pairs:
-        ppair = "%.1f"%_ppair[0], "%.1f"%_ppair[1] 
-        squares.append([tpair, ppair])
+squares = create_squares(Trange, Prange, subdivisions)
 
 for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
     os.mkdir(_nm)
-    cwd = os.getcwd() + "/"
-    os.symlink(cwd + "vertex", cwd + _nm + "/vertex")
-    os.symlink(cwd + "build", cwd + _nm + "/build")
+    create_symlinks(_nm, files=["vertex","build", "werami",
+                                "stx11ver.dat", "stx11_solution_model.dat"])
     os.chdir(_nm)
     for isq, square in enumerate(squares):
         tmin, tmax = square[0]
@@ -68,5 +42,12 @@ for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
                      amounts=a, models=m)
         ob, eb = q.build()
         ov, ev = q.vertex()
-    os.chdir("../")
+        ow, ew = q.werami()
         
+    os.chdir("../")
+
+# %%
+for nm in project_names:
+    ass = Assembler(nm, 2)
+    parts, joined, stitched = ass.assemble()
+    ass.export_tab()

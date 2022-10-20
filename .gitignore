@@ -10,5 +10,7 @@
 *.tof
 __pycache__
 vertex
+build
+unsplt690
 # paths
 *_ign/

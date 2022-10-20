@@ -7,7 +7,7 @@ Created on Wed Oct 19 14:12:35 2022
 """
 
 import unittest
-from quadralizer import Automator
+from quadralizer import Automator, Project
 
 
 class TestAutomator(unittest.TestCase):
@@ -41,7 +41,9 @@ class TestAutomator(unittest.TestCase):
         self.assertEqual(s, expected)
         # print(stdout)
         # print(stderr)
-            
-
+        
+    def test_Project(self): 
+        project = Project()        
+        
 if __name__ == "__main__":
     unittest.main()

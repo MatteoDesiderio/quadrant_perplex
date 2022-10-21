@@ -1,10 +1,10 @@
-This is a simple python (?) script to
+These are simple python modules to
 
 * Define a number of quadrants in the PT space
 * Run BUILD for each of these quadrants, automating the input
 * Run VERTEX in each of these automating the input and possibly parallelizing
 * Run WERAMI, automating the input
-* Stitch the tab files thus created into one neat tab files
+* Stitch the tab files thus created into one neat tab file
 
 
 

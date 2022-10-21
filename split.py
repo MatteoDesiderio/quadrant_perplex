@@ -48,6 +48,6 @@ for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
 
 # %%
 for nm in project_names:
-    ass = Assembler(nm, 2)
+    ass = Assembler(nm, subdivisions)
     parts, joined, stitched = ass.assemble()
     ass.export_tab()

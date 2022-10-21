@@ -17,24 +17,54 @@ check = lambda i : i[-2:] != "\n"
 
 class Quadrant:
     """
-    A class to build a project and save relevant files
+    A class to represent a project in a given subset of the PT space.
+
+
+    Attributes
+    ----------
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
     
-    Parameters
+    perplex_option_file : str
+
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
+    
+    perplex_option_file : str
+
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
+    
+    perplex_option_file : str
+
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
+    
+    perplex_option_file : str
+
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
+    
+    perplex_option_file : str
+
+    name : str
+        name of the perplex project, e.g. 'Basalt'
+    database : str
+    
+    perplex_option_file : str
+
+
+    Methods
     -------
-    name  :  str
-    The desired proj name, e.g. 'basalt'
-    PMinMax : list
-    
-    TMinMax : list
-    
-    Solutions : list
-    
-    Others_1 : list
-    
-    Others_2 : list
-    
-    S
+    info(additional=""):
+        Prints the person's name and age.
     """
+    
     def __init__(self,
                  name="name", 
                  database="stx11ver.dat", 
@@ -61,18 +91,10 @@ class Quadrant:
                  models=["C2/c","Wus","Pv",
                          "O","Wad","Ring",
                          "Opx","Aki","Ppv"]):
-        
+        """
         
         """
-        Initialize Project class with the desired sequence of inputs for 
-        automating BUILD and VERTEX
-        
-        Returns
-        -------
-        None.
 
-        """
-        
         self.name=name
         self.database=database
         self.perplex_option_file=perplex_option_file
@@ -111,22 +133,12 @@ class Quadrant:
         self.vtx_stdout = "Vertex Not done yet"
         self.vtx_stderr = "Vertex Not done yet"
     
-    def setUpPath(self):
-        os.mkdir("./" + self.name)
-    
     def build(self):
         build = Automator("build", self.inputs)
         stdout, stderr = build.automate()
         self.bld_stdout = stdout
         self.bld_stderr = stderr
         return (self.bld_stdout, self.bld_stderr)
-        
-
-    def create(self):
-        #self.setUpPath()
-        self.build()
-        #os.rename("./" + self.name + ".dat",
-        #          "./" + self.name + "/" + self.name + ".dat")
     
     def vertex(self):
         vertex = Automator( "vertex", [self.name])
@@ -155,13 +167,13 @@ class Automator:
     """
     A class to automate any Perplex program
     
-    Parameters
+    Attributes
     -------
     perplex_program  :  str
-    The desired perplex program e.g. VERTEX
+        The desired perplex program e.g. VERTEX
     inputs :  list
-    The list of desired inputs (of type str) for the perplex_program 
-    e.g. for VERTEX : "name_of_project"
+        The list of desired inputs (of type str) for the perplex_program 
+    e.g. for VERTEX : ["name_of_project"]
     
     """
     def __init__(self, perplex_program=None, inputs=[]):
@@ -169,9 +181,23 @@ class Automator:
         Initialize Automator class with the desired perplex program and 
         sequence of relevant inputs
         
-        Returns
+        Attributes
         -------
-        None.
+        perplex_program  :  str
+            The desired perplex program e.g. VERTEX
+        inputs :  list
+            The sequential list of desired inputs (of type str) for the 
+            perplex_program, e.g. for VERTEX : ["name_of_project"]. Note that
+            it must include "empty" inputs, if any are required by the program
+            at any point in the sequence (i.e., some times a program may ask 
+            a return to signify the end of a list of values. This can be done
+            by putting an empty character "" after that set of values).
+            
+        Methods
+        -------
+        automate
+            Method to automate the program stored in self.perplex_program, with 
+            the desired sequential list of inputs stored in self.inputs.
 
         """
         if perplex_program[:2] != "./":
@@ -184,7 +210,8 @@ class Automator:
 
     def automate(self):
         """
-        
+        Method to automate the program stored in self.perplex_program, with the
+        desired sequential list of inputs stored in self.inputs.
 
         Returns
         -------
@@ -209,9 +236,79 @@ class Automator:
         return stdout, stderr
 
 class Assembler:
+    """
+    A class to assemble the WERAMI outputs, assuming that they each represent
+    the properties on a quadrant of the PT space and that these quadrant are
+    contiguous, and are ordered consistently, and share the same values along 
+    their mutual boundaries. Like this, for 4 quadrants of 3x3 values:
+    0 . x x . 1
+    . . x x . .
+    x x x x x x             The "x"s represent the numbers 
+    x x x x x x             The numbers represent the order
+    . . x x . .
+    2 . x x . 3
+    A scheme like this is granted when the quadrants are generated by the
+    function "create_squares" in the module "utils"
+    
+    Attributes
+    -------
+    path  :  str
+        The name of the project, e.g. "Basalt"
+    subdivisions :  int
+        The number of quadrants along each axis. 
+        
+    ntot : int
+        The total number of quadrants, ntot = subdivisions**2
+    tabfiles : list
+        The list of tab file names generated by PYWERAMI. This is generated on 
+        initialization based on "self.path" and "self.ntot".
+    P_info : list
+        List of strings of independent variable info extracted from the tab of 
+        a single quadrant. They are min_var, step_var, nsteps_var.
+        
+    T_info : list
+        List of strings of independent variable info extracted from the tab of 
+        a single quadrant. They are min_var, step_var, nsteps_var.
+        
+    header : list
+        Each element of the list is a line of the header extracrted from a 
+        the tab file of a single quadrant. The values of nsteps_P and nsteps_T
+        are changed to the final value of the assembled tab files when running 
+        method "assemble" (7th and 11th line). The name of the tab (2nd line)
+        is changed to "path_1.tab" (e.g. Basalt_1.tab) when running the 
+        method "export_tab".
+        
+    self.stitched : numpy.ndarray
+        The array containing the generated tab file assembled from the 
+        quadrants.
+
+    Methods
+    -------
+    assemble
+        Method to collect the WERAMI output for all the quadrants and stitch 
+        them together into one neat tab file 
+    export_tab
+        Method to export "self.stitched" into a tab file with the correct 
+        header. 
+    join
+        Helper method for assemble. Succintly, puts the quadrants next to each 
+        other.
+    stitch
+        Helper method for assemble. Succintly, eliminates the seams between the 
+        quadrants.
+    """
+    
     def __init__(self, path, subdivisions):
         """
+        Initialize the Assembler class
         
+        Parameters
+        -------
+        path  :  str
+            The name of the project, e.g. "Basalt"
+        subdivisions :  int
+            The number of quadrants along each axis. 
+            n_quadrants = subdivisions ** 2
         """
         path = path if path[-1] == "/" else path + "/"
         self.path = path
@@ -225,6 +322,24 @@ class Assembler:
         self.stitched = None
         
     def assemble(self):
+        """
+        Method to collect the WERAMI output for all the quadrants and stitch 
+        them together into one neat tab file 
+
+        Returns
+        -------
+        parts : list
+            A list of numpy.ndarrays. Each array is the tab file of each
+            quadrant.
+        joined : numpy.ndarray
+            The array is the tab file generated by putting the quadrants next
+            to each other. 
+            joined.shape = (steps_P*subdivisions)x(steps_T*subdivisions)
+        stitched : numpy.ndarray
+            The array is the tab file generated by putting the quadrants next
+            to each other and eliminating the seams. 
+            stitched.shape = (steps_P*subdivisions-1)x(steps_T*subdivisions-1)
+        """
         parts = []
         header = ""
         for i, tab in enumerate(self.tabfiles):

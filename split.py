@@ -24,7 +24,7 @@ models = [["C2/c", "Wus", "Pv", "O", "Wad", "Ring", "Opx", "Aki", "Ppv", ""],
 
 Trange = [300, 4000]
 Prange = [1, 1400000]
-subdivisions = 2
+subdivisions = 3
 squares = create_squares(Trange, Prange, subdivisions)
 
 for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
@@ -33,7 +33,7 @@ for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
                                 "stx11ver.dat", "stx11_solution_model.dat"])
     os.chdir(_nm)
     for isq, square in enumerate(squares):
-        tmin, tmax = square[0]
+        tmin, tmax = square[0]  
         pmin, pmax = square[1]
         nm = _nm + "_quadrant%i"%isq
         q = Quadrant(name=nm, components=c,

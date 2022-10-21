@@ -1,6 +1,5 @@
 # files
 *_ign.*
-*.dat
 *.plt
 *.blk
 *.arf
@@ -9,10 +8,9 @@
 *.tim
 *.tof
 *.tab
-__pycache__
 vertex
 build
-unsplt690
 werami
 # paths
 *_ign/
+__pycache__/

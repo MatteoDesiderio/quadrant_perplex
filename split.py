@@ -27,7 +27,7 @@ Prange = [1, 1400000]
 subdivisions = 3
 squares = create_squares(Trange, Prange, subdivisions)
 
-for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
+for _nm, c, a, m in zip(project_names, components, mass_amounts, models):    
     os.mkdir(_nm)
     create_symlinks(_nm, files=["vertex","build", "werami",
                                 "stx11ver.dat", "stx11_solution_model.dat"])
@@ -42,8 +42,8 @@ for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
                      amounts=a, models=m)
         ob, eb = q.build()
         ov, ev = q.vertex()
-        ow, ew = q.werami()
-        
+        ow, ew = q.werami()     
+  
     os.chdir("../")
 
 # %%

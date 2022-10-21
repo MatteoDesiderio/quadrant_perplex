@@ -221,6 +221,7 @@ class Automator:
             stderr of the program.
 
         """
+
         process = subprocess.Popen([self.perplex_program],
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, 

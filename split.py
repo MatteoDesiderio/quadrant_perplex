@@ -11,7 +11,7 @@ from quadralizer import Quadrant, Assembler
 import os
 
 project_names = ["primRef", "HzXu08", "BsXu08"][:1]
-components = [["MGO", "FEO", "SIO2", ""], # the last empty one is to end 
+components = [["MGO", "FEO", "SIO2", ""], # the last empty one is to end list
               (),
               ()]
 mass_amounts = [["32", "14", "60"],

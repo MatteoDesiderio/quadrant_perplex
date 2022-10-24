@@ -127,31 +127,27 @@ class Quadrant:
                     inputs.append(sub_el)
         
         self.inputs = inputs
-        self.bld_stdout = "Build Not done yet"
-        self.bld_stderr = "Build Not done yet"
+        self.stdout = {"build":[], "vertex":[], "werami":[]}
         
-        self.vtx_stdout = "Vertex Not done yet"
-        self.vtx_stderr = "Vertex Not done yet"
-    
     def build(self):
         build = Automator("build", self.inputs)
-        stdout, stderr = build.automate()
-        self.bld_stdout = stdout
-        self.bld_stderr = stderr
-        return (self.bld_stdout, self.bld_stderr)
+        proc = build.automate()
+        # self.bld_stdout = stdout
+        # self.bld_stderr = stderr
+        return proc
     
     def vertex(self):
         vertex = Automator("vertex", [self.name])
-        stdout, stderr = vertex.automate()
-        self.vtx_stdout = stdout
-        self.vtx_stderr = stderr
-        return (self.vtx_stdout, self.vtx_stderr)
+        proc = vertex.automate()
+        #self.vtx_stdout = stdout
+        #self.vtx_stderr = stderr
+        return proc
     
     def werami(self):
         """
         For now it's hardcoded to do one thing (rho, K and G for
         the whole system, in the default PT range and with the
-        last grid_level resolution used, i.e. the highest'
+        1st grid_level resolution used, i.e. the lowest of the refine stage'
         """
         
         inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "1", "0"]
@@ -160,10 +156,8 @@ class Quadrant:
         inputs = [self.name] + inputs
         #inputs = [i + "\n" for i in inputs if check(i)]
         werami = Automator("werami", inputs)
-        stdout, stderr = werami.automate()
-        self.wtx_stdout = stdout
-        self.wtx_stderr = stderr
-        return (self.wtx_stdout, self.wtx_stderr)
+        proc = werami.automate()
+        return proc
     
 class Automator:
     """
@@ -223,20 +217,31 @@ class Automator:
             stderr of the program.
 
         """
-        
-        process = subprocess.Popen([self.perplex_program],
-                                   stdin=subprocess.PIPE,
+        # ABSURD but it is what it is
+        header = "#!/bin/sh" # let subprocess know I want a script 
+        inputs = "".join(self.inputs) # join in one line
+        inputs = inputs.replace("\n", "\\n") #need escape
+        command = ["printf " + inputs + " | " + self.perplex_program]
+        title = self.perplex_program + ".sh"
+        np.savetxt(title, command, header=header, fmt="%s",
+                   comments="", newline=" ")
+
+        st = os.stat(title)
+        os.chmod(title, st.st_mode | 0o0111)
+
+        process = subprocess.Popen([title],
+                                   #stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, 
                                    stderr=subprocess.PIPE, 
                                    universal_newlines=True)
-
-        for i in self.inputs:
-            process.stdin.write(i)
         
-        stdout, stderr = process.communicate()
-        process.stdin.close()
+        #for i in self.inputs:
+        #    process.stdin.write(i)
+        
+        # stdout, stderr = process.communicate()
+        # process.stdin.close()
 
-        return stdout, stderr
+        return process
 
         
         """printf = subprocess.run(["printf", "".join(self.inputs)],
@@ -247,7 +252,6 @@ class Automator:
         stdout, stderr = (process.stdout.decode('utf-8').strip(), 
                           process.stderr.decode('utf-8').strip())
 """
-        return stdout, stderr
         
 class Assembler:
     """

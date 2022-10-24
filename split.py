@@ -6,10 +6,11 @@ Created on Wed Oct 19 17:34:44 2022
 @author: matteo
 """
 
-from utils import create_squares, create_symlinks
+from utils import *
 from quadralizer import Quadrant, Assembler
 import os
 
+#%% User defined inputs
 # Name of the projects
 project_names = ["primRef", "HzXu08", "BsXu08"]
 
@@ -35,41 +36,21 @@ models = [["C2/c", "Wus", "Pv", "O", "Wad", "Ring", "Opx",
 Trange = [300, 4000]
 Prange = [1, 1400000]
 # How many sectors along each axis
-subdivisions = 2
+subdivisions = 10
 
-# %% Compute
+# %% initialize
 
 # collect squares in the PT domain
 squares = create_squares(Trange, Prange, subdivisions)
 
-# loop over projects
-werami_outputs = []
-for _nm, c, a, m in zip(project_names, components, mass_amounts, models):  
-    # create directory to store results
-    os.mkdir(_nm) 
-    # need to symlink the programs and the thermodynamic databases
-    create_symlinks(_nm, files=["vertex","build", "werami", 
-                                "stx11ver.dat", "stx11_solution_model.dat", 
-                                "perplex_option.dat"])
-    os.chdir(_nm)
-    # loop over PT space subdivisions (squares)
-    for isq, square in enumerate(squares):
-        tmin, tmax = square[0]  
-        pmin, pmax = square[1]
-        nm = _nm + "_quadrant%i"%isq
-        # Initialize the computation for the quadrant
-        q = Quadrant(name=nm, components=c,
-                     MinT=tmin, MaxT=tmax,
-                     MinP=pmin, MaxP=pmax,   
-                     amounts=a, models=m)
-        # BUILD, VERTEX and WERAMI
-        ob, eb = q.build()
-        ov, ev = q.vertex()
-        ow, ew = q.werami()     
-    
-    werami_outputs.append(ow)
-    
-    os.chdir("../")
+create_paths(project_names)
+proj_quadrants = initialize_quadrants(project_names, components, 
+                                      mass_amounts, models, squares)
+
+# %% Compute
+parallelize(proj_quadrants, project_names, "build")
+parallelize(proj_quadrants, project_names, "vertex")
+parallelize(proj_quadrants, project_names, "werami")
 
 # %% Join the separate results of the computation
 for nm in project_names:

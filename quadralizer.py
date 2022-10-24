@@ -141,7 +141,7 @@ class Quadrant:
         return (self.bld_stdout, self.bld_stderr)
     
     def vertex(self):
-        vertex = Automator( "vertex", [self.name])
+        vertex = Automator("vertex", [self.name])
         stdout, stderr = vertex.automate()
         self.vtx_stdout = stdout
         self.vtx_stderr = stderr
@@ -154,10 +154,12 @@ class Quadrant:
         last grid_level resolution used, i.e. the highest'
         """
         
-        inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "0"]
+        inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "1", "0"]
+        # inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "y", "0"]
+
         inputs = [self.name] + inputs
-        inputs = [i + "\n" for i in inputs if check(i)]
-        werami = Automator( "werami", inputs)
+        #inputs = [i + "\n" for i in inputs if check(i)]
+        werami = Automator("werami", inputs)
         stdout, stderr = werami.automate()
         self.wtx_stdout = stdout
         self.wtx_stderr = stderr
@@ -221,7 +223,7 @@ class Automator:
             stderr of the program.
 
         """
-
+        
         process = subprocess.Popen([self.perplex_program],
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, 
@@ -236,6 +238,17 @@ class Automator:
 
         return stdout, stderr
 
+        
+        """printf = subprocess.run(["printf", "".join(self.inputs)],
+                                  check=True, capture_output=True)
+        process = subprocess.run([self.perplex_program],
+                                 input=printf.stdout, capture_output=True)
+        
+        stdout, stderr = (process.stdout.decode('utf-8').strip(), 
+                          process.stderr.decode('utf-8').strip())
+"""
+        return stdout, stderr
+        
 class Assembler:
     """
     A class to assemble the WERAMI outputs, assuming that they each represent

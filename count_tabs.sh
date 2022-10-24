@@ -1,0 +1,1 @@
+while true; do a=$(ls *tab | wc -l); echo -ne "$a\033[0K\r"; sleep 10; done

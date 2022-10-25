@@ -79,7 +79,7 @@ def parallelize(proj_quadrants, project_names, perplex_program):
 
         processes = []
         for q in proj:
-            proc = getattr(q ,perplex_program)()
+            proc = getattr(q, perplex_program)()
             processes.append(proc)
         
         for p in processes:

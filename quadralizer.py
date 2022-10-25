@@ -132,15 +132,11 @@ class Quadrant:
     def build(self):
         build = Automator("build", self.inputs)
         proc = build.automate()
-        # self.bld_stdout = stdout
-        # self.bld_stderr = stderr
         return proc
     
     def vertex(self):
         vertex = Automator("vertex", [self.name])
         proc = vertex.automate()
-        #self.vtx_stdout = stdout
-        #self.vtx_stderr = stderr
         return proc
     
     def werami(self):
@@ -152,9 +148,7 @@ class Quadrant:
         
         inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "1", "0"]
         # inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "y", "0"]
-
         inputs = [self.name] + inputs
-        #inputs = [i + "\n" for i in inputs if check(i)]
         werami = Automator("werami", inputs)
         proc = werami.automate()
         return proc
@@ -217,19 +211,25 @@ class Automator:
             stderr of the program.
 
         """
-        # ABSURD but it is what it is
-        header = "#!/bin/sh" # let subprocess know I want a script 
-        inputs = "".join(self.inputs) # join in one line
-        inputs = inputs.replace("\n", "\\n") #need escape
-        command = ["printf " + inputs + " | " + self.perplex_program]
-        title = self.perplex_program + ".sh"
+        # let subprocess know I want a script
+        header = "#!/bin/sh" 
+        # the list always begins with the dat file, so I can exclude it 
+        # and pass it as an argument of the shell script that I build
+        # this allows me not to write a shell program for every quadrant! 
+        name = self.inputs[0][:-1]
+        inputs = "".join(self.inputs[1:]) # join in one line
+        inputs = inputs.replace("\n", "\\n") # need escape
+        command = ["printf " + "$1\\n" + inputs + " | " + self.perplex_program]
+        title = self.perplex_program +".sh"
         np.savetxt(title, command, header=header, fmt="%s",
-                   comments="", newline=" ")
-
+                   comments="")
+        # now I created a shell script, go take a look at it
+        # permission to execute, sir
         st = os.stat(title)
         os.chmod(title, st.st_mode | 0o0111)
-
-        process = subprocess.Popen([title],
+        
+        # start subprocess, no need to pipe a std input
+        process = subprocess.Popen([title, name],
                                    #stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, 
                                    stderr=subprocess.PIPE, 

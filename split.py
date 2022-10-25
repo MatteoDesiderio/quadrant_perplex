@@ -7,7 +7,7 @@ Created on Wed Oct 19 17:34:44 2022
 """
 
 from utils import *
-from quadralizer import Quadrant, Assembler
+from quadralizer import Quadrant, Assembler, ParamReader
 import os
 from sys import argv
 
@@ -16,8 +16,13 @@ from sys import argv
 
 project_names = [ argv[1] ]
 
-project_names = ["primRef", "HzXu08", "BsXu08"]
+components, mass_amounts, models = ParamReader.read(argv[1])
 
+components = [components]
+mass_amounts = [mass_amounts]
+models = [models]
+
+"""
 # Components of the system... 
 components = [["MGO", "FEO", "SIO2", ""], # the last empty one is to end list
               ["CAO", "FEO", "MGO", "AL2O3", "SIO2", "NA2O", ""],
@@ -35,12 +40,12 @@ models = [["C2/c", "Wus", "Pv", "O", "Wad", "Ring", "Opx",
            "Pv", "Ppv", "CF", "C2/c", "Wus", "Aki", "Gt", ""],
           ["Pl", "Sp", "O", "Wad", "Ring", "Opx", "Cpx", 
            "Pv", "Ppv", "CF", "C2/c", "Wus", "Aki", "Gt", ""]]
-
+"""
 # The overall limits of the computation domain
 Trange = [300, 4000]
 Prange = [1, 1400000]
 # How many sectors along each axis
-subdivisions = 2
+subdivisions = argv[2]
 
 # %% initialize
 # collect squares in the PT domain
@@ -56,10 +61,10 @@ proj_quadrants = initialize_quadrants(project_names, components,
 _ = parallelize(proj_quadrants, project_names, "build")
 
 # %% Vertex
-_ = parallelize(proj_quadrants[-1:], project_names[-1:], "vertex")
+_ = parallelize(proj_quadrants, project_names, "vertex")
 
 # %% Werami
-_ = parallelize(proj_quadrants[-1], project_names[-1], "werami")
+_ = parallelize(proj_quadrants, project_names, "werami")
 
 # %% Join the separate results of the computation
 for nm in project_names:

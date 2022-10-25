@@ -27,7 +27,7 @@ class ParamReader:
             for line in file:
                 for i, var in enumerate(names):
                     if var in line:
-                        variables[i] = file.next().split()
+                        variables[i] = file.next().replace(" ", "").split(",")
                     else:
                         pass
         return variables

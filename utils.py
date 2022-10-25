@@ -43,14 +43,20 @@ def create_symlinks(_nm, files=["vertex","build","werami","stx11ver.dat",
         os.symlink(cwd + f, cwd + _nm + "/" + f)
    
 
-def create_paths(project_names):
-    for _nm in project_names:  
-        # create directory to store results
-        os.mkdir(_nm)    
-        # need to symlink the programs and the thermodynamic databases
-        create_symlinks(_nm, files=["vertex","build", "werami", 
-                                    "stx11ver.dat", "stx11_solution_model.dat", 
-                                    "perplex_option.dat"])
+def create_paths(project_names, subdivisions):
+    nq = subdivisions ** 2
+    for _nm in project_names:
+        os.mkdir(_nm)
+        #os.chdir(_nm)
+        for isq in range(nq):
+            # create directory to store results
+            q_nm = "quadrant%i"%isq
+            os.mkdir(_nm + "/" + q_nm)
+            #os.chdir(q_nm)
+            # need to symlink the programs and the thermodynamic databases
+            files=["vertex","build", "werami", "stx11ver.dat", 
+                   "stx11_solution_model.dat", "perplex_option.dat"]
+            create_symlinks(_nm + "/" + q_nm, files)
 
 def initialize_quadrants(project_names, components, mass_amounts, models, 
                          squares):
@@ -60,6 +66,7 @@ def initialize_quadrants(project_names, components, mass_amounts, models,
         os.chdir(_nm)
         # loop over PT space subdivisions (squares)
         for isq, square in enumerate(squares):
+            os.chdir("quadrant%i"%isq)
             tmin, tmax = square[0]  
             pmin, pmax = square[1]
             nm = _nm + "_quadrant%i"%isq
@@ -69,25 +76,31 @@ def initialize_quadrants(project_names, components, mass_amounts, models,
                          MinP=pmin, MaxP=pmax,   
                          amounts=a, models=m)
             qs.append(q)
+            os.chdir("../")
         proj_quadrants.append(qs)
         os.chdir("../")
-        return proj_quadrants
+    return proj_quadrants
         
 def parallelize(proj_quadrants, project_names, perplex_program):
     for nm, proj in zip(project_names, proj_quadrants):
+        print("Now doing", perplex_program, "for",  nm)
         os.chdir(nm)
 
         processes = []
-        for q in proj:
+        for isq, q in enumerate(proj):
+            os.chdir("quadrant%i"%isq)
             proc = getattr(q, perplex_program)()
             processes.append(proc)
-        
+            os.chdir("../")
+            
         for p in processes:
-            stdout, stderr = p.communicate()
-            q.stdout[perplex_program].append(stdout)
+            #stdout, stderr = p.communicate()
+            #q.stdout[perplex_program] = stdout
+            p.wait()
             #p.stdin.close()
             
         os.chdir("../")
+    return proj_quadrants
 
 
 

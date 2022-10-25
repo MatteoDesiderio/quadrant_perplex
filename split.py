@@ -36,21 +36,21 @@ models = [["C2/c", "Wus", "Pv", "O", "Wad", "Ring", "Opx",
 Trange = [300, 4000]
 Prange = [1, 1400000]
 # How many sectors along each axis
-subdivisions = 10
+subdivisions = 2
 
 # %% initialize
-
 # collect squares in the PT domain
 squares = create_squares(Trange, Prange, subdivisions)
 
-create_paths(project_names)
+create_paths(project_names, subdivisions)
+
 proj_quadrants = initialize_quadrants(project_names, components, 
                                       mass_amounts, models, squares)
 
 # %% Compute
-parallelize(proj_quadrants, project_names, "build")
-parallelize(proj_quadrants, project_names, "vertex")
-parallelize(proj_quadrants, project_names, "werami")
+_ = parallelize(proj_quadrants, project_names, "build")
+_ = parallelize(proj_quadrants, project_names, "vertex")
+proj_quadrants = parallelize(proj_quadrants, project_names, "werami")
 
 # %% Join the separate results of the computation
 for nm in project_names:

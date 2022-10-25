@@ -1,3 +1,2 @@
 #!/bin/sh
-var=$@
-printf $var'\n' | ./vertex ; sleep 0.1
+printf 'BsXu08_quadrant0\n' | ./vertex

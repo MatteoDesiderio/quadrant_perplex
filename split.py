@@ -9,9 +9,13 @@ Created on Wed Oct 19 17:34:44 2022
 from utils import *
 from quadralizer import Quadrant, Assembler
 import os
+from sys import argv
 
 #%% User defined inputs
 # Name of the projects
+
+project_names = [ argv[1] ]
+
 project_names = ["primRef", "HzXu08", "BsXu08"]
 
 # Components of the system... 
@@ -44,13 +48,18 @@ squares = create_squares(Trange, Prange, subdivisions)
 
 create_paths(project_names, subdivisions)
 
+# %%
 proj_quadrants = initialize_quadrants(project_names, components, 
                                       mass_amounts, models, squares)
 
-# %% Compute
+# %% Build
 _ = parallelize(proj_quadrants, project_names, "build")
-_ = parallelize(proj_quadrants, project_names, "vertex")
-proj_quadrants = parallelize(proj_quadrants, project_names, "werami")
+
+# %% Vertex
+_ = parallelize(proj_quadrants[-1:], project_names[-1:], "vertex")
+
+# %% Werami
+_ = parallelize(proj_quadrants[-1], project_names[-1], "werami")
 
 # %% Join the separate results of the computation
 for nm in project_names:

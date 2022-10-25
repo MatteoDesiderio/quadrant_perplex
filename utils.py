@@ -81,25 +81,42 @@ def initialize_quadrants(project_names, components, mass_amounts, models,
         os.chdir("../")
     return proj_quadrants
         
-def parallelize(proj_quadrants, project_names, perplex_program):
+def parallelize(proj_quadrants, project_names, perplex_program, nproc=2):
+    
     for nm, proj in zip(project_names, proj_quadrants):
         print("Now doing", perplex_program, "for",  nm)
         os.chdir(nm)
-
-        processes = []
-        for isq, q in enumerate(proj):
-            os.chdir("quadrant%i"%isq)
-            proc = getattr(q, perplex_program)()
-            processes.append(proc)
-            os.chdir("../")
-            
-        for p in processes:
-            #stdout, stderr = p.communicate()
-            #q.stdout[perplex_program] = stdout
-            p.wait()
-            #p.stdin.close()
-            
+        
+        length = len(proj)
+        nsub = length // nproc
+        sectors = []
+        indices_list = []
+        for i in range(nsub + 1):
+            start = i * nproc
+            end = min((i + 1) * nproc, length)
+            if start != end:
+                sector = proj[start:end]
+                rng = range(start, end, 1)
+                indices_list.append(list(rng))
+                sectors.append(sector)
+        
+        for sector, indices in zip(sectors, indices_list):
+            processes = []
+            #for isq, q in enumerate(proj):
+            for q, isq in zip(sector, indices):
+                os.chdir("quadrant%i"%isq)
+                proc = getattr(q, perplex_program)()
+                processes.append(proc)
+                os.chdir("../")
+                
+            for i, p in enumerate(processes):
+                #stdout, stderr = p.communicate()
+                q = proj[i]
+                #q.stdout[perplex_program] = stdout
+                p.wait()
+        
         os.chdir("../")
+        
     return proj_quadrants
 
 

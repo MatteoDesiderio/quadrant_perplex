@@ -17,6 +17,21 @@ def add_newlines(inputs):
     check = lambda i : i[-2:] != "\n"
     return [i + "\n" for i in inputs if check(i)]
 
+class ParamReader:
+    
+    @staticmethod
+    def read(path):
+        names = ("components", "mass_amounts", "models")
+        variables = ([], [], [])
+        with open(path, "r") as file:
+            for line in file:
+                for i, var in enumerate(names):
+                    if var in line:
+                        variables[i] = file.next().split()
+                    else:
+                        pass
+        return variables
+
 class Quadrant:
     """
     A class to represent a project in a given subset of the PT space.
@@ -133,16 +148,14 @@ class Quadrant:
         
     def build(self):
         # TODO leave out $VAR etc because no longer necessary, RETVRN
-        inputs = add_newlines(self.inputs)
         # the $var is necessary because the self.name of the dat file is passed
         # into it when spawning the subprocess
-        inputs =  ["$var'\n"] + inputs[1:-1] + ["'$var'\n"]
-        build = Automator("build", inputs, self.name)
+        build = Automator("build", self.inputs, self.name)
         proc = build.automate()
         return proc
     
     def vertex(self):
-        vertex = Automator("vertex", ["$var'\n"], self.name)
+        vertex = Automator("vertex", [self.name])
         proc = vertex.automate()
         return proc
     
@@ -152,12 +165,10 @@ class Quadrant:
         the whole system, in the default PT range and with the
         1st grid_level resolution used, i.e. the lowest of the refine stage'
         """
-        
         inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "1", "0"]
-        inputs = add_newlines(inputs)
         # inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "y", "0"]
-        inputs = ["$var'\n"] + inputs
-        werami = Automator("werami", inputs, self.name)
+        inputs = [self.name] + inputs
+        werami = Automator("werami", inputs)
         proc = werami.automate()
         return proc
     
@@ -202,8 +213,7 @@ class Automator:
             perplex_program = "./" + perplex_program
         self.perplex_program = perplex_program
         
-        
-        self.inputs = inputs
+        self.inputs = add_newlines(inputs)
         self.name = name
         
     def automate(self):
@@ -220,11 +230,10 @@ class Automator:
 
         """
         # let subprocess know I want a script
-        header = "#!/bin/sh\nvar=$@" 
+        header = "#!/bin/sh" 
         inputs = "".join(self.inputs) # join in one line
         inputs = inputs.replace("\n", "\\n") # need escape
-        command = ["printf " + inputs + "' | " + self.perplex_program +
-                   " ; sleep 0.1"]
+        command = ["printf '" + inputs + "' | " + self.perplex_program]
         title = self.perplex_program +".sh"
         np.savetxt(title, command, header=header, fmt="%s",
                    comments="")
@@ -234,29 +243,16 @@ class Automator:
         os.chmod(title, st.st_mode | 0o0111)
         
         # start subprocess, no need to pipe a std input
-        process = subprocess.Popen(#["touch", self.name],
-                                   [title,  self.name],
-                                   stdout=subprocess.PIPE, 
-                                   stderr=subprocess.PIPE, 
+        process = subprocess.Popen([title],
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL    )
+        """
+                                   stdout=subprocess.DEVNULL, 
+                                   stderr=subprocess.DEVNULL, 
                                    universal_newlines=True)
-        
-        #for i in self.inputs:
-        #    process.stdin.write(i)
-        
-        # stdout, stderr = process.communicate()
-        # process.stdin.close()
-
+        """
         return process
 
-        
-        """printf = subprocess.run(["printf", "".join(self.inputs)],
-                                  check=True, capture_output=True)
-        process = subprocess.run([self.perplex_program],
-                                 input=printf.stdout, capture_output=True)
-        
-        stdout, stderr = (process.stdout.decode('utf-8').strip(), 
-                          process.stderr.decode('utf-8').strip())
-"""
         
 class Assembler:
     """

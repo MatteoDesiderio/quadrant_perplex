@@ -22,12 +22,19 @@ class ParamReader:
     @staticmethod
     def read(path):
         names = ("components", "mass_amounts", "models")
-        variables = ([], [], [])
+        variables = [[], [], []]
         with open(path, "r") as file:
-            for line in file:
+            lines = file.readlines()
+            for j, line in enumerate(lines):
                 for i, var in enumerate(names):
                     if var in line:
-                        variables[i] = file.next().replace(" ", "").split(",")
+                        # need to eliminate h
+                        val = lines[j+1].replace(" ", "").split(",")[:-1]
+                        # need to put a blank space 
+                        if not("mass" in var) :
+                            variables[i] = val + [""]
+                        else:
+                            variables[i] = val
                     else:
                         pass
         return variables
@@ -244,13 +251,9 @@ class Automator:
         
         # start subprocess, no need to pipe a std input
         process = subprocess.Popen([title],
-                                   stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL    )
-        """
                                    stdout=subprocess.DEVNULL, 
                                    stderr=subprocess.DEVNULL, 
                                    universal_newlines=True)
-        """
         return process
 
         
@@ -330,11 +333,11 @@ class Assembler:
             n_quadrants = subdivisions ** 2
         """
         path = path if path[-1] == "/" else path + "/"
-        self.path = path
+        self.path = path 
         self.subdivisions = subdivisions
         self.ntot = subdivisions**2
-        self.tabfiles = [path + path[:-1] + "_quadrant%i"%i + "_1.tab"
-                         for i in range(self.ntot)]
+        self.tabfiles = [path + r"quadrant%i/"%i + path[:-1] + 
+                         "_quadrant%i"%i + "_1.tab" for i in range(self.ntot)]
         self.P_info = []
         self.T_info = []
         self.header = []
@@ -362,6 +365,7 @@ class Assembler:
         parts = []
         header = ""
         for i, tab in enumerate(self.tabfiles):
+            print(i)
             if i == 0:
                 min_T, step_T, nsteps_T = np.loadtxt(tab, skiprows=4, 
                                                      max_rows=3)

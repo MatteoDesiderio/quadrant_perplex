@@ -68,7 +68,7 @@ Aki
 Gt        
 end solution phase list
 
-   700000.        2150.00        0.00000        0.00000        0.00000     max p, t, xco2, mu_1, mu_2
+   87500.9        531.200        0.00000        0.00000        0.00000     max p, t, xco2, mu_1, mu_2
    1.00000        300.000        0.00000        0.00000        0.00000     min p, t, xco2, mu_1, mu_2
    0.00000        0.00000        0.00000        0.00000        0.00000     unused place holder post 06
 

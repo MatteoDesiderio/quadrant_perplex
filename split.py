@@ -25,12 +25,11 @@ print(mass_amounts)
 print(models)
 
 # The overall limits of the computation domain
-Trange = [300, 4000]
-Prange = [1, 1400000]
+Trange = [300, 4000] # K
+Prange = [1, 1400000] # bar
 # How many sectors along each axis
 subdivisions = int(argv[2])
 # how many parallel processes
-nproc =  int(argv[3])
 
 # %% initialize
 # collect squares in the PT domain
@@ -43,11 +42,11 @@ proj_quadrants = initialize_quadrants(project_names, components,
                                       mass_amounts, models, squares)
 
 # %% Build
-_ = parallelize(proj_quadrants, project_names, "build", nproc=nproc)
+_ = prepare(proj_quadrants, project_names, "build")
 
 # %% Vertex
-_ = parallelize(proj_quadrants, project_names, "vertex", nproc=nproc)
+_ = prepare(proj_quadrants, project_names, "vertex")
 
 # %% Werami
-_ = parallelize(proj_quadrants, project_names, "werami", nproc=nproc)
+_ = prepare(proj_quadrants, project_names, "werami")
 

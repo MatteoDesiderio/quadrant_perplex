@@ -158,13 +158,11 @@ class Quadrant:
         # the $var is necessary because the self.name of the dat file is passed
         # into it when spawning the subprocess
         build = Automator("build", self.inputs, self.name)
-        proc = build.automate()
-        return proc
+        build.automate()
     
     def vertex(self):
         vertex = Automator("vertex", [self.name])
-        proc = vertex.automate()
-        return proc
+        vertex.automate()
     
     def werami(self):
         """
@@ -176,8 +174,7 @@ class Quadrant:
         # inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "y", "0"]
         inputs = [self.name] + inputs
         werami = Automator("werami", inputs)
-        proc = werami.automate()
-        return proc
+        werami.automate()
     
 class Automator:
     """
@@ -248,13 +245,6 @@ class Automator:
         # permission to execute, sir
         st = os.stat(title)
         os.chmod(title, st.st_mode | 0o0111)
-        
-        # start subprocess, no need to pipe a std input
-        process = subprocess.Popen([title],
-                                   stdout=subprocess.DEVNULL, 
-                                   stderr=subprocess.DEVNULL, 
-                                   universal_newlines=True)
-        return process
 
         
 class Assembler:

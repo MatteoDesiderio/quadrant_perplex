@@ -1,6 +1,6 @@
-# components (last empty el is needed)
+# components (last empty el is needed) Example Harzburgite (Xu et al. '08)
 CAO, FEO, MGO, AL2O3, SIO2, NA2O, 
 # mass_amounts (last empty el is needed)
-12.61, 8.22, 9.76, 16.84, 50.39, 2.19, 
+0.89, 8.61, 45.72, 1.33, 43.45, 0.0, 
 # models (last empty el is needed)
 Pl, Sp, O, Wad, Ring, Opx, Cpx, Pv, Ppv, CF, C2/c, Wus, Aki, Gt, 

@@ -10,3 +10,25 @@ These are simple python modules to
 
 
 The dir_ign directory contains my own tests (it's gitignored)
+
+# Usage
+
+Create txt file with components, massa amounts, solution models
+"""
+vim foo.txt
+"""
+Then
+"""
+python split.py foo.txt n_sub
+"""
+Then
+"""
+./parallelize build foo n_proc
+./parallelize vertex foo n_proc
+./parallelize werami foo n_proc
+"""
+Then
+
+"""
+python unsplit.py foo
+"""

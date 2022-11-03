@@ -464,8 +464,8 @@ class Assembler:
         if len(multipliers) == 1:
             multipliers = 1
         # the actual indices of the columns, rows to be deleted 
-        del_rows = int(nx) * multipliers 
-        del_cols = int(ny) * multipliers 
+        del_rows = int(ny) * multipliers 
+        del_cols = int(nx) * multipliers 
         
         stitched_cols = []
         # in this example, I have 4 grids (3x3) joined. x are the repeated 

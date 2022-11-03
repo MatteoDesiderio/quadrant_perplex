@@ -42,7 +42,7 @@ proj_quadrants = initialize_quadrants(project_names, components,
                                       mass_amounts, models, squares)
 
 # %% Build
-_ = prepare(proj_quadrants, project_names, "build")
+_ = prepare(proj_quadrants, project_names, "build") 
 
 # %% Vertex
 _ = prepare(proj_quadrants, project_names, "vertex")

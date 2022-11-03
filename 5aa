@@ -1,6 +1,6 @@
-# components 
-MGO, FEO, SIO2, 
-# mass_amounts
-32.24, 14.37, 60.08, 
-# models
-C2/c, Wus, Pv, O, Wad, Ring, Opx, Aki, Ppv, 
+# components (last empty el is needed)
+CAO, FEO, MGO, AL2O3, SIO2, NA2O, 
+# mass_amounts (last empty el is needed)
+12.61, 8.22, 9.76, 16.84, 50.39, 2.19, 
+# models (last empty el is needed)
+Pl, Sp, O, Wad, Ring, Opx, Cpx, Pv, Ppv, CF, C2/c, Wus, Aki, Gt, 

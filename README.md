@@ -34,9 +34,14 @@ Then:
 I suggest using n_proc = n_sub.
 (Note: need to wait for vertex to finish before you can do werami, 
 same thing for vertex and build but the latter is almost instantaneous).
+You may take a gander at the progress with 
+```
+tail -f template/quadrant*/OUTPUT_*txt
+```
+
 
 Finally:
 ```
-python unsplit.py foo
+python unsplit.py template
 ```
 This will put everything together. You can check out the result with pywerami.

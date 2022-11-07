@@ -13,27 +13,27 @@ The dir_ign directory contains my own tests (it's gitignored)
 
 # Usage
 
-Create txt file with components, massa amounts, solution models
-
+Create txt file with components, mass amounts, solution models 
+(check template for how it's done):
 ```
-vim foo.txt
-```
-
-Then
-
-```
-python split.py foo.txt n_sub
+vim template.txt
 ```
 
-Then
-
+Then:
 ```
-./parallelize build foo n_proc
-./parallelize vertex foo n_proc
-./parallelize werami foo n_proc
+python split.py template.txt n_sub
 ```
-Then
 
+Then:
+```
+./parallelize build template n_proc
+./parallelize vertex template n_proc
+./parallelize werami template n_proc
+```
+(Note: need to wait for vertex to finish before you can do werami, 
+same thing for vertex and build but the latter is almost instantaneous).
+
+Finally:
 ```
 python unsplit.py foo
 ```

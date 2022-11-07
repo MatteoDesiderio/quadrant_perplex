@@ -238,7 +238,7 @@ class Automator:
         inputs = "".join(self.inputs) # join in one line
         inputs = inputs.replace("\n", "\\n") # need escape
         command = ["printf '" + inputs + "' | " + self.perplex_program]
-        title = self.perplex_program +".sh"
+        title = self.perplex_program + ".sh"
         np.savetxt(title, command, header=header, fmt="%s",
                    comments="")
         # now I created a shell script, go take a look at it

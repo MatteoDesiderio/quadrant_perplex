@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # stagpy_movies.sh
-# simple script to parallelize stagpy command to plot fields
 
 . ~/.bashrc
 #source ~/StagPy/.venv_dev/bin/activate

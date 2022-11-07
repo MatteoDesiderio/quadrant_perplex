@@ -8,6 +8,7 @@
 *.tim
 *.tof
 *.tab
+bogus*
 vertex
 build
 werami
@@ -15,6 +16,6 @@ werami
 # paths
 *_ign/
 __pycache__/
-primRef/
-BsXu08/
-HzXu08/
+primRef*/
+BsXu08*/
+HzXu08*/

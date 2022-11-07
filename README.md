@@ -39,7 +39,6 @@ You may take a gander at the progress with
 tail -f template/quadrant*/OUTPUT_*txt
 ```
 
-
 Finally:
 ```
 python unsplit.py template

@@ -13,19 +13,17 @@ from sys import argv
 
 #%% User defined inputs
 # Name of the projects
-project_names = [ argv[1].replace(".txt", "") ]
+project_name = argv[1].replace(".txt", "")
 # these parameters are read from a file
-database, sol_model, components, mass_amounts, models = ParamReader.read(argv[1])
+inputs = ParamReader.read(argv[1])
 
+_ = [print(i, "-->" , inputs[i]) for i in inputs]
 
-components = [components]
-mass_amounts = [mass_amounts]
-models = [models]
-print(database)
-print(sol_model)
-print(components)
-print(mass_amounts)
-print(models)
+database = inputs["database"]
+solution_model = inputs["solution_model"]
+components = inputs["components"] 
+mass_amounts = inputs["mass_amounts"]
+models = inputs["models"]
 
 # The overall limits of the computation domain
 Trange = [300, 4000] # K
@@ -38,18 +36,17 @@ subdivisions = int(argv[2])
 # collect squares in the PT domain
 squares = create_squares(Trange, Prange, subdivisions)
 
-create_paths(project_names, subdivisions, database, sol_model)
+create_paths(project_name, subdivisions, database, solution_model)
 
 # %%
-proj_quadrants = initialize_quadrants(project_names, components, 
-                                      mass_amounts, models, squares)
+proj_quadrants = initialize_quadrants(project_name, **inputs, squares=squares)
 
 # %% Build
-_ = prepare(proj_quadrants, project_names, "build") 
+_ = prepare(proj_quadrants, project_name, "build") 
 
 # %% Vertex
-_ = prepare(proj_quadrants, project_names, "vertex")
+_ = prepare(proj_quadrants, project_name, "vertex")
 
 # %% Werami
-_ = prepare(proj_quadrants, project_names, "werami")
+_ = prepare(proj_quadrants, project_name, "werami")
 

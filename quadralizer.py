@@ -12,6 +12,7 @@ import subprocess
 import os
 import glob
 import numpy as np
+import json
 
 def add_newlines(inputs):
     check = lambda i : i[-2:] != "\n"
@@ -21,24 +22,47 @@ class ParamReader:
     
     @staticmethod
     def read(path):
-        names = ("components", "mass_amounts", "models")
-        variables = [[], [], []]
+        # each linei in the file is an element of the list of type str
+        lines = np.loadtxt(path, dtype="str", delimiter="/n", comments=None)
+        iscomment = lambda x : x.replace(" ", "")[0] == "#"
+        names = [n for n in lines if iscomment(n)]
+        names = [n.replace(" ", "").replace("#", "") for n in names]
+        variables = [v for v in lines if not iscomment(v)]
+
+
+        str2list = lambda x : x.replace(" ", "").split(",")
+        dictionary = {n:str2list(v) for n,v in zip(names, variables)}
+        for key in dictionary:
+            if not("mass" in key):
+                dictionary[key] += [""]
+
+        for key in ["database", "solution_model"]:
+            dictionary[key] = dictionary[key][0]
+
+        return dictionary
+
+        """
         with open(path, "r") as file:
             lines = file.readlines()
             for j, line in enumerate(lines):
+                print()
                 for i, var in enumerate(names):
+                    print("read", var)
                     if var in line:
                         # need to eliminate h
                         val = lines[j+1].replace(" ", "").split(",")[:-1]
-                        # need to put a blank space 
-                        if not("mass" in var) :
-                            variables[i] = val + [""]
-                        else:
-                            variables[i] = val
+
+                            # need to put a blank space 
+                            if not("mass" in var):
+                                variables[i] = val + [""]
+                            else:
+                                variables[i] = val
+
+                        print(val)
                     else:
                         pass
         return variables
-
+        """
 class Quadrant:
     """
     A class to represent a project in a given subset of the PT space.

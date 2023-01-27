@@ -43,8 +43,12 @@ def create_symlinks(_nm, files=["vertex","build","werami","stx11ver.dat",
         os.symlink(cwd + f, cwd + _nm + "/" + f)
    
 
-def create_paths(project_names, subdivisions):
+def create_paths(project_names, subdivisions, database="stx11ver.dat", 
+                 solution_model="stx11_solution_model.dat"):
     nq = subdivisions ** 2
+    programs = ["vertex","build", "werami"]
+    thermo_database = [database, solution_model]
+
     for _nm in project_names:
         os.mkdir(_nm)
         #os.chdir(_nm)
@@ -54,8 +58,8 @@ def create_paths(project_names, subdivisions):
             os.mkdir(_nm + "/" + q_nm)
             #os.chdir(q_nm)
             # need to symlink the programs and the thermodynamic databases
-            files=["vertex","build", "werami", "stx11ver.dat", 
-                   "stx11_solution_model.dat", "perplex_option.dat"]
+
+            files= programs + thermo_database + ["perplex_option.dat"]
             create_symlinks(_nm + "/" + q_nm, files)
 
 def initialize_quadrants(project_names, components, mass_amounts, models, 

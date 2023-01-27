@@ -43,61 +43,56 @@ def create_symlinks(_nm, files=["vertex","build","werami","stx11ver.dat",
         os.symlink(cwd + f, cwd + _nm + "/" + f)
    
 
-def create_paths(project_names, subdivisions, database="stx11ver.dat", 
+def create_paths(project_name, subdivisions, database="stx11ver.dat", 
                  solution_model="stx11_solution_model.dat"):
     nq = subdivisions ** 2
     programs = ["vertex","build", "werami"]
     thermo_database = [database, solution_model]
 
-    for _nm in project_names:
-        os.mkdir(_nm)
-        #os.chdir(_nm)
-        for isq in range(nq):
-            # create directory to store results
-            q_nm = "quadrant%i"%isq
-            os.mkdir(_nm + "/" + q_nm)
-            #os.chdir(q_nm)
-            # need to symlink the programs and the thermodynamic databases
+    os.mkdir(project_name)
+    for isq in range(nq):
+        # create directory to store results
+        q_nm = "quadrant%i"%isq
+        os.mkdir(project_name + "/" + q_nm)
+        # need to symlink the programs and the thermodynamic databases
 
-            files= programs + thermo_database + ["perplex_option.dat"]
-            create_symlinks(_nm + "/" + q_nm, files)
+        files = programs + thermo_database + ["perplex_option.dat"]
+        create_symlinks(project_name + "/" + q_nm, files)
 
-def initialize_quadrants(project_names, components, mass_amounts, models, 
-                         squares):
+def initialize_quadrants(project_name, database, solution_model,
+                         components, mass_amounts, models,
+                         squares, ):
     proj_quadrants = [] 
-    for _nm, c, a, m in zip(project_names, components, mass_amounts, models):
-        qs = []
-        os.chdir(_nm)
-        # loop over PT space subdivisions (squares)
-        for isq, square in enumerate(squares):
-            os.chdir("quadrant%i"%isq)
-            tmin, tmax = square[0]  
-            pmin, pmax = square[1]
-            nm = _nm + "_quadrant%i"%isq
-            # Initialize the computation for the quadrant
-            q = Quadrant(name=nm, components=c,
-                         MinT=tmin, MaxT=tmax,
-                         MinP=pmin, MaxP=pmax,   
-                         amounts=a, models=m)
-            qs.append(q)
-            os.chdir("../")
-        proj_quadrants.append(qs)
+
+    os.chdir(project_name)
+    # loop over PT space subdivisions (squares)
+    for isq, square in enumerate(squares):
+        os.chdir("quadrant%i"%isq)
+        tmin, tmax = square[0]  
+        pmin, pmax = square[1]
+        nm = project_name + "_quadrant%i"%isq
+        # Initialize the computation for the quadrant
+        q = Quadrant(name=nm, components=components,
+                     MinT=tmin, MaxT=tmax, 
+                     MinP=pmin, MaxP=pmax, 
+                     amounts=mass_amounts, models=models, 
+                     database=database, solution_model=solution_model)
+        proj_quadrants.append(q)
         os.chdir("../")
+    os.chdir("../")
     return proj_quadrants
         
-def prepare(proj_quadrants, project_names, perplex_program):
+def prepare(proj_quadrants, project_name, perplex_program):
+    print("Now creating the", perplex_program, 
+          "stdin for",  project_name)
+    os.chdir(project_name)
     
-    for nm, proj in zip(project_names, proj_quadrants):
-        print("Now doing", perplex_program, "for",  nm)
-        os.chdir(nm)
-        
-        for isq, q in enumerate(proj):
-            os.chdir("quadrant%i"%isq)
-            getattr(q, perplex_program)()
-            os.chdir("../")
-        
+    for isq, q in enumerate(proj_quadrants):
+        os.chdir("quadrant%i"%isq)
+        getattr(q, perplex_program)()
         os.chdir("../")
-        
+
+    os.chdir("../")
     return proj_quadrants
 
 

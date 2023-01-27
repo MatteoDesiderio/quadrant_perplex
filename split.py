@@ -15,11 +15,14 @@ from sys import argv
 # Name of the projects
 project_names = [ argv[1].replace(".txt", "") ]
 # these parameters are read from a file
-components, mass_amounts, models = ParamReader.read(argv[1])
+database, sol_model, components, mass_amounts, models = ParamReader.read(argv[1])
+
 
 components = [components]
 mass_amounts = [mass_amounts]
-models = [models] 
+models = [models]
+print(database)
+print(sol_model)
 print(components)
 print(mass_amounts)
 print(models)
@@ -35,7 +38,7 @@ subdivisions = int(argv[2])
 # collect squares in the PT domain
 squares = create_squares(Trange, Prange, subdivisions)
 
-create_paths(project_names, subdivisions)
+create_paths(project_names, subdivisions, database, sol_model)
 
 # %%
 proj_quadrants = initialize_quadrants(project_names, components, 

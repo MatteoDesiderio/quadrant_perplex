@@ -22,7 +22,7 @@ class ParamReader:
     
     @staticmethod
     def read(path):
-        # each linei in the file is an element of the list of type str
+        # each line in the file is an element of the list of type str
         lines = np.loadtxt(path, dtype="str", delimiter="/n", comments=None)
         iscomment = lambda x : x.replace(" ", "")[0] == "#"
         names = [n for n in lines if iscomment(n)]

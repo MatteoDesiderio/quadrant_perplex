@@ -28,9 +28,8 @@ models = inputs["models"]
 # The overall limits of the computation domain
 Trange = [300, 4000] # K
 Prange = [1, 1400000] # bar
-# How many sectors along each axis
+# How many sectors along each axis, i.e. parallel processes
 subdivisions = int(argv[2])
-# how many parallel processes
 
 # %% initialize
 # collect squares in the PT domain

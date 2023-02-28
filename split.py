@@ -13,9 +13,14 @@ from sys import argv
 
 #%% User defined inputs
 # Name of the projects
-project_name = argv[1].replace(".txt", "")
+try:
+    project_name = argv[1].replace(".txt", "")
+except IndexError:
+    print("No arguments supplied, taking file HzSTX21.txt")
+    project_name = "HzSTX21"
+        
 # these parameters are read from a file
-inputs = ParamReader.read(argv[1])
+inputs = ParamReader.read(project_name + ".txt")
 
 _ = [print(i, "-->" , inputs[i]) for i in inputs]
 
@@ -29,7 +34,11 @@ models = inputs["models"]
 Trange = [300, 4000] # K
 Prange = [1, 1400000] # bar
 # How many sectors along each axis, i.e. parallel processes
-subdivisions = int(argv[2])
+try:    
+    subdivisions = int(argv[2])
+except IndexError:
+    print("Using 4 parallel processes")
+    subdivisions = 2
 
 # %% initialize
 # collect squares in the PT domain

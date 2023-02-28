@@ -37,7 +37,7 @@ Prange = [1, 1400000] # bar
 try:    
     subdivisions = int(argv[2])
 except IndexError:
-    print("Using 4 parallel processes")
+    print("Will use 2 subdivisions")
     subdivisions = 2
 
 # %% initialize

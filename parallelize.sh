@@ -1,95 +1,107 @@
 #!/usr/bin/env bash
-# stagpy_movies.sh
 
 . ~/.bashrc
-#source ~/StagPy/.venv_dev/bin/activate
 
+# functions ---------------------------------------------------------------------
 _vertex() {
-	name=$1
-    start=$2
-    finish=$3
-	for isq in $(seq $start 1 $finish)
-	do
-		pth="$name""$isq"
-		cd $pth
-		./vertex.sh > OUTPUT_VERTEX.txt
-		cd ../..	
-	done
+	pth=$1
+	cd $pth
+	./vertex.sh > OUTPUT_VERTEX.txt
+	cd ../..	
 }
 
 _werami() {
-	name=$1
-    start=$2
-    finish=$3
-	for isq in $(seq $start 1 $finish)
-	do
-		pth="$name""$isq"
-		cd $pth
-		./werami.sh > OUTPUT_WERAMI.txt
-		cd ../..
-	done
+	pth=$1
+	cd $pth
+	./werami.sh > OUTPUT_WERAMI.txt
+	cd ../..
 }
-
 
 _build() {
-	name=$1
-    start=$2
-    finish=$3
-	for isq in $(seq $start 1 $finish)
-	do
-		pth="$name""$isq"
-		cd $pth
-		./build.sh > OUTPUT_BUILD.txt
-		cd ../..
-	done
+	pth=$1
+	cd $pth
+	./build.sh > OUTPUT_BUILD.txt
+	cd ../..
 }
 
-fun() {
+wrapper() {
 	program=$1
-    name="$2"/quadrant
-    start=$3
-    finish=$4
+    name=$2
+
     case $program in
-    	vertex) _vertex $name $start $finish ;;
-		werami) _werami $name $start $finish ;;
-		build)  _build  $name $start $finish ;;	
-	esac
-		
-    # outn=~/movies_output_/$(basename $model)/$field/  
+    	vertex) _vertex $2 ;;
+		werami) _werami $2 ;;
+		build)  _build  $2 ;;	
+	esac	
 }
+# -------------------------------------------------------------------------------
 
-# this gets the max number of processes for the user
-max_num_processes=$(ulimit -u)
-# An arbitrary limiting factor so that there are some free processes
-# in case I want to run something else
-limiting_factor=4096
-#num_processes=$((max_num_processes/limiting_factor))
+# arguments ---------------------------------------------------------------------
+program=$1 # name of the program you want to parallelize: build/vertex/werami
+name=$2	   								   # name of the project (the folder) 
+num_processes=$3 						   # number of the parallel jobs requested
+# -------------------------------------------------------------------------------
 
-program=$1
-name=$2
-num_processes=$3
-
-#
+# operations --------------------------------------------------------------------
+# this gets the max number of processors on the machine
+max_num_processes=$(nproc)
+# the total number of tasks is the number of quadrants
 ntot=$(ls -d $name/q*/ | wc -l) 
-
 # let's avoid the case when Nproc > Nsnaps
 num_processes=$((num_processes<ntot ? num_processes : ntot))
-part=$((ntot/num_processes))
-#echo ntot $ntot part $part
-#echo $model/+im/$field/stagpy_field_
+num_processes=$((num_processes<max_num_processes ? num_processes : max_num_processes))
+# let's count how many parts
+parts=$((ntot/num_processes))
+# -------------------------------------------------------------------------------
 
-for start in $(seq 0 $part $(($ntot-1)))
-do
-    finish=$(($start+$part-1))
+# print info --------------------------------------------------------------------
+echo directory $name
+echo Requested num of processes: $3
+echo Actual num of processes: $num_processes 
+echo Max num of processors available: $max_num_processes
+echo Total number of tasks $ntot
+echo Computation divided into $parts parts 
+# -------------------------------------------------------------------------------
 
-    if [ $finish -gt $start ]
-    then
-	    if [ $finish -gt $(($ntot-1)) ]
-	    then
-	        finish=$(($ntot-1))
-	    fi
-    	((i=i%num_processes)); ((i++==0)) && wait
-    	fun "$program" "$name" "$start" "$finish" &
+# main loop ---------------------------------------------------------------------
+# based on 
+# https://unix.stackexchange.com/questions/103920/parallelize-a-bash-for-loop/436713#436713
+
+# start a job at each iteration of the loop
+for path in $name/q*/
+do 
+	# if the program is vertex the computation is very long
+	# it makes sense to check first if it's been done already
+	# if not, then we start the job
+	if [[ $program == "vertex" ]]
+	then
+		capitalized=$(echo ${program^^})
+		grep "End of job" $path*OUTPUT*$capitalized*txt > /dev/null
+		a=$?
+		if [[ $a > 0 ]]
+		then 
+			# echo $path
+			wrapper $program $path &
+		fi
+	else
+		wrapper $program $path &
 	fi
-done
+		
+	# allow to execute only up to $num_processes jobs in parallel
+    if [[ $(jobs -r -p | wc -l) -ge $num_processes ]]; then
+        # wait with the option -n waits for any job to throw an exit status
+        # before advancing the loop to the next step
+        wait -n
+    fi
+    # as soon a slot is freed, the loop will advance and a new job will be 
+    # started to fill the empty slot
 
+done
+# at the end of the loop, there are no more jobs to be started 
+# but there'll be pending jobs for sure and we need them to finish before 
+# moving on 
+
+wait
+
+echo "all done"
+# -------------------------------------------------------------------------------

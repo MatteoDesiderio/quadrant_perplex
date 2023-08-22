@@ -64,44 +64,10 @@ echo Computation divided into $parts parts
 # -------------------------------------------------------------------------------
 
 # main loop ---------------------------------------------------------------------
-# based on 
-# https://unix.stackexchange.com/questions/103920/parallelize-a-bash-for-loop/436713#436713
-
-# start a job at each iteration of the loop
 for path in $name/q*/
 do 
-	# if the program is vertex the computation is very long
-	# it makes sense to check first if it's been done already
-	# if not, then we start the job
-	if [[ $program == "vertex" ]]
-	then
-		capitalized=$(echo ${program^^})
-		grep "End of job" $path*OUTPUT*$capitalized*txt > /dev/null
-		a=$?
-		if [[ $a > 0 ]]
-		then 
-			# echo $path
-			wrapper $program $path &
-		fi
-	else
-		wrapper $program $path &
-	fi
-		
-	# allow to execute only up to $num_processes jobs in parallel
-    if [[ $(jobs -r -p | wc -l) -ge $num_processes ]]; then
-        # wait with the option -n waits for any job to throw an exit status
-        # before advancing the loop to the next step
-        wait -n
-    fi
-    # as soon a slot is freed, the loop will advance and a new job will be 
-    # started to fill the empty slot
-
+	((i=i%num_processes)); ((i++==0)) && wait
+	wrapper $program $path &
 done
-# at the end of the loop, there are no more jobs to be started 
-# but there'll be pending jobs for sure and we need them to finish before 
-# moving on 
-
-wait
-
-echo "all done"
 # -------------------------------------------------------------------------------
+

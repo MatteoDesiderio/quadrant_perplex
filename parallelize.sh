@@ -42,6 +42,12 @@ name=$2	   								   # name of the project (the folder)
 num_processes=$3 						   # number of the parallel jobs requested
 # -------------------------------------------------------------------------------
 
+if [ $program == '--help' ]
+then
+	echo 'Usage: program_name [build/vertex/werami] name_of_project number_of_processes [e.g. 8]'
+fi
+
+
 # operations --------------------------------------------------------------------
 # this gets the max number of processors on the machine
 max_num_processes=$(nproc)

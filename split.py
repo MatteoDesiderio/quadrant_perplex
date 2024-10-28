@@ -14,16 +14,16 @@ from sys import argv
 #%% User defined inputs
 # Name of the projects
 try:
-    project_name = argv[1].replace(".txt", "")
+    project_name = argv[2].replace(".txt", "")
 except IndexError:
-    print("No arguments supplied, taking file HzSTX21.txt")
-    project_name = "HzSTX21"
+    raise ValueError("Specify Project Name (xyz.txt) ")
         
 # these parameters are read from a file
 inputs = ParamReader.read(project_name + ".txt")
 
 _ = [print(i, "-->" , inputs[i]) for i in inputs]
 
+perplexVersion = inputs["perplexVersion"]
 database = inputs["database"]
 solution_model = inputs["solution_model"]
 components = inputs["components"] 

@@ -36,33 +36,33 @@ def create_squares(Trange=[300, 4000], Prange=[1, 1400000], subdivisions=2):
     
     return squares
 
-def create_symlinks(_nm, files=["vertex","build","werami","stx11ver.dat",
+def create_symlinks(quadrant_directory, perplex_version,
+                    files=["vertex","build","werami","stx11ver.dat",
                                 "stx11_solution_model.dat"]):
     cwd = os.getcwd() + "/"
     for f in files:
-        os.symlink(cwd + f, cwd + _nm + "/" + f)
+        os.symlink(f"{cwd}/{perplex_version}/{f}", 
+                   f"{cwd}/{quadrant_directory}/{f}")
    
 
 def create_paths(project_name, perplex_version, subdivisions, 
                  database="stx11ver.dat", solution_model="stx11_solution_model.dat"):
 
     nq = subdivisions ** 2
-    programs = [f"{perplex_version}/{prog}" 
-                for prog in ["vertex","build", "werami"]]
-    thermo_database = [f"{perplex_version}/{database}",
-                       f"{perplex_version}/{solution_model}"]
+    programs = ["vertex","build", "werami"]
+    thermo_database = [database, solution_model]
 
     os.mkdir(project_name)
     for isq in range(nq):
         # create directory to store results
-        q_nm = "quadrant%i"%isq
-        os.mkdir(project_name + "/" + q_nm)
+        quadrant_dirname = "quadrant%i" % isq
+        os.mkdir(project_name + "/" + quadrant_dirname)
         # need to symlink the programs and the thermodynamic databases
 
-        files = programs + thermo_database + [f"{perplex_version}/perplex_option.dat"]
-        create_symlinks(project_name + "/" + q_nm, files)
+        files = programs + thermo_database + ["perplex_option.dat"]
+        create_symlinks(project_name + "/" + quadrant_dirname, perplex_version, files)
 
-def initialize_quadrants(project_name, database, solution_model,
+def initialize_quadrants(perplex_version, project_name, database, solution_model,
                          components, mass_amounts, models,
                          squares):
     proj_quadrants = [] 

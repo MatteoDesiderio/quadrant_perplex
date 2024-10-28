@@ -51,7 +51,7 @@ class ParamReader:
             if not("mass" in key):
                 dictionary[key] += [""]
 
-        for key in ["database", "solution_model"]:
+        for key in ["database", "solution_model", "perplex_version"]:
             dictionary[key] = dictionary[key][0]
 
         return dictionary
@@ -193,7 +193,7 @@ class Quadrant:
         self.stdout = {"build":"", "vertex":"", "werami":""}
         
     def build(self):
-        # TODO leave out $VAR etc because no longer necessary, RETVRN
+        # TODO leave out $VAR etc because no longer necessary, return
         # the $var is necessary because the self.name of the dat file is passed
         # into it when spawning the subprocess
         build = Automator("build", self.inputs, self.name)

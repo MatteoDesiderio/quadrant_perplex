@@ -161,7 +161,17 @@ class Quadrant:
         self.name=name
         self.database=database
         self.perplex_option_file=perplex_option_file
-        self.transform=transform
+        if "stx24" in database: 
+            self.transform="y"
+            self.new_component_name="FeO" # what does it mean?
+            self.old_component_name="Fe"  # in other words:
+            self.other_component="O\n"      # what if I replace O
+            self.stoichiometric_coeff_1="1" # instead of Fe?
+            self.stoichiometric_coeff_2="1" 
+            self.confirm="y"
+            self.transform_another_one="n"
+        else:
+            self.transform=transform
         self.computational_mode=computational_mode
         self.saturated=saturated
         self.add_independent_variables=add_independent_variables

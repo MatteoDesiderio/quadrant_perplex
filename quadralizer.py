@@ -215,11 +215,12 @@ class Quadrant:
     
     def werami(self):
         """
-        For now it's hardcoded to do one thing (rho, K and G for
+        For now it's hardcoded to do one thing 
+        (rho 2, K 10 and G 11 (and S 17) for
         the whole system, in the default PT range and with the
         1st grid_level resolution used, i.e. the lowest of the refine stage'
         """
-        inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "1", "0"]
+        inputs = ["2", "38", "1", "2", "10", "11", "17", "0", "n", "1", "0"]
         # inputs = ["2", "38", "1", "2", "10", "11", "0", "n", "4", "y", "0"]
         inputs = [self.name] + inputs
         werami = Automator("werami", inputs)

@@ -1,4 +1,4 @@
-Works with any Perple_X version, if build, vertex, werami, perplex_option and database/solution model files are supplied
+Works with any Perple_X version, if build, vertex, werami, perplex_option and database/solution model files are supplied. Requires numpy=1.22.
 
 # Description
 
@@ -52,3 +52,4 @@ Finally:
 python unsplit.py template
 ```
 This will put everything together. You can check out the result with pywerami.
+
